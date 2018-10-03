@@ -2,3 +2,10 @@
  node_js: node
  services:
      - mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: XCSoVlLmASyOEF4eh3kNm761jPzXQJvAtvmwAA8jQiY9JQTBePXlEdsCFVRc1JHS8WHC+xqof/zZ/qXfkuPJdHtjSPWq9Rm4e/95Zyo2u4QHK8IK+u7go6f7CmQqpThyhMQLL48XDJjZEI4LoPcGVikZ11iJw+hEsBnA7IH/l/Li7XoD7wE7k4NB2ieoJ9bv+08jG+fDBfDwQ5FMOrbXpn8+P2BkPyPWQYHDMvMODrZz8MaFd8UDpsNPplmrJoTShAMz6vUvwtVDnHmIH4KPtXauCd4DVqK907Qu/CnEXXf0HR4Hih5qSVLLjjlUD+OwLDH/6YY/fp7m9/IReiC3cw8EyR8M+V8HqpKrWSa9eMnEOV4Ucm9jwUPfvRomy1X0Ai0ASeRuS90dkhkPkP61MhkhlYQBf4yvFxdm0tb28tIRbKhhax9nGE3ksjXVns7d15lqqLnGgB4LMijkG0s0y8AGOhLk6kHadrJRKHVDKnKi053V5UTYONOagBfUdrNMStRcCICAnUbaNaRowffN4njw84cB9TEyJT0JNVaOm87qHmL+NRs8hF78ZrsCDFXUBgAcYzspBrfUOKmQS0OotIm6lNRIG3EF1Voaq448huHsJUELWiUDw1eL5fA69r1DEaDWkePx6CJhEUhu9ePbAwS9JJyVBRGYnF9yjqF9tiE=
+  app: secret-waters-77326
+  on:
+    repo: davelarimore/diecastr-api
