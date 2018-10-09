@@ -10,9 +10,9 @@ const createAuthToken = function (user) {
     });
 };
 
-require('../models/petsModel');
-require('../models/visitsModel');
-require('../models/petsModel');
+require('../models/collectionsModel');
+require('../models/modelsModel');
+require('../models/photosModel');
 const Users = require('../models/usersModel');
 
 const localAuth = passport.authenticate('local', { session: false });
@@ -39,7 +39,7 @@ exports.signup = (req, res) => {
         });
     }
 
-    const stringFields = ['email', 'password', 'firstName', 'lastName'];
+    const stringFields = ['email', 'password', 'userName' ];
     const nonStringField = stringFields.find(
         field => field in req.body && typeof req.body[field] !== 'string'
     );
@@ -105,15 +105,7 @@ exports.signup = (req, res) => {
     let {
         email,
         password,
-        firstName = '',
-        lastName = '',
-        role,
-        companyName,
-        phone,
-        addressString,
-        vetInfo,
-        entryNote,
-        providerId
+        userName = '',
     } = req.body;
     // Username and password come in pre-trimmed, otherwise we throw an error
     // before this
@@ -139,15 +131,7 @@ exports.signup = (req, res) => {
             return Users.create({
                 email,
                 password: hash,
-                firstName,
-                lastName,
-                companyName,
-                role,
-                phone,
-                addressString,
-                vetInfo,
-                entryNote,
-                providerId
+                userName,
             });
         })
         .then((user) => {
@@ -162,16 +146,3 @@ exports.signup = (req, res) => {
             res.status(500).json({ code: 500, message: 'Internal server error' });
         });
 };
-
-// GET providers for signup screen
-exports.authGetProviders = (req, res) => {
-    Users
-        .find({ 'role': 'provider' })
-        .then(users => {
-            res.status(201).json(users);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ message: 'Internal server error' })
-        });
-}

@@ -12,7 +12,4 @@ router.post('/login', localAuth, authController.authenticate);
 // signup: add a new user
 router.post('/signup', authController.signup);
 
-//GET PROVIDERS list for signup
-router.get('/providers', authController.authGetProviders);
-
 module.exports = router;

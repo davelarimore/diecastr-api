@@ -3,26 +3,15 @@
 const Users = require('../models/usersModel');
 
 ////////////////////////////////
-//AUTHENTICATED PROVIDERS ONLY
-////////////////////////////////
-
-// GET handled by getMe()
-
-////////////////////////////////
 // ALL AUTHENTICATED USERS
 ////////////////////////////////
 
-// GET users/me: - get my client object only, accessible by any authenticated user
+// GET users/me: - get user, accessible by any authenticated user
 exports.usersGetMe = (req, res) => {
     Users
         .findOne({ '_id': req.user._id })
-        .populate('pets')
-        .populate({ path: 'visits', populate: {path: 'client', model: 'Users'}, options: { sort: { startTime: 1 } } })
-        .populate('tasks')
-        .populate('provider')
-        .populate({ path: 'clients', populate: { path: 'tasks', model: 'Tasks' } })
-        .populate({ path: 'clients', populate: { path: 'pets', model: 'Pets' } })
-        .populate({ path: 'clients', populate: { path: 'visits', model: 'Visits' }, options: { sort: { startTime: 1 } } })
+        .populate('collections')
+        .populate('models')
         .then(user => {
             res.status(200).json(user.serialize());
         })
@@ -32,10 +21,10 @@ exports.usersGetMe = (req, res) => {
         });
 }
 
-//PUT: update client or client of provider
+//PUT: update user
 exports.usersPut = (req, res) => {
-    if (req.user._id === req.body._id || req.user.clients.includes(req.body._id)) {
-        const requiredFields = ['firstName', 'lastName', 'phone', 'addressString'];
+    if (req.user._id === req.body._id) {
+        const requiredFields = ['userName'];
         for (let i = 0; i < requiredFields.length; i++) {
             const field = requiredFields[i];
             if (!(field in req.body)) {
@@ -46,15 +35,9 @@ exports.usersPut = (req, res) => {
         }
         Users.findOneAndUpdate({
             _id: req.body._id
-            },
+        },
             {
-            companyName: req.body.companyName,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            phone: req.body.phone,
-            addressString: req.body.addressString,
-            entryNote: req.body.entryNote,
-            vetInfo: req.body.vetInfo
+                userName: req.body.userName,
             },
             { new: true }) //returns updated doc
             .then(response => {
@@ -69,18 +52,15 @@ exports.usersPut = (req, res) => {
     }
 }
 
-//DELETE: delete client of provider
+//DELETE: delete user
 exports.usersDelete = (req, res) => {
-    if (req.user.clients.includes(req.params.id)) {
-        Users.findByIdAndRemove(req.params.id)
-            .then(() => {
-                res.status(204).json({ message: 'User deleted' });
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).json({ error: 'Internal server error' });
-            });
-    } else {
-        res.status(403).json('Not authorized to access resource');
-    }
+    Users.findByIdAndRemove(req.params.id)
+        .then(() => {
+            res.status(204).json({ message: 'User deleted' });
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Internal server error' });
+        });
+
 }
