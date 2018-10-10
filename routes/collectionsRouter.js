@@ -3,6 +3,12 @@ const router = express.Router();
 
 const collectionsController = require('../controllers/collectionsController');
 
+//Get: get a user's collection
+router.get('/collections/:id', collectionsController.collectionsGet);
+
+//Get: get all user's collections
+router.get('/collections', collectionsController.collectionsGetAll);
+
 //POST: add a collection to user
 router.post('/collections', collectionsController.collectionsPost);
 

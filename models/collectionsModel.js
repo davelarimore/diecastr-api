@@ -17,7 +17,6 @@ const collectionSchema = mongoose.Schema({
     }],
 });
 
-
 // Push new collection reference to the user's document
 collectionSchema.pre('save', function (next) {
     const collection = this;

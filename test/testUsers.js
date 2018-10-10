@@ -47,7 +47,7 @@ describe('Protected users endpoint', function () {
     });
 
     after(function () {
-        return Users.remove({})
+        return Users.deleteMany({})
             .then(() => closeServer())
     });
 

@@ -5,6 +5,7 @@ const chaiHttp = require('chai-http');
 
 const { app, runServer, closeServer } = require('../server');
 const Users = require('../models/usersModel');
+const Collections = require('../models/collectionsModel');
 const Models = require('../models/modelsModel');
 
 const expect = chai.expect;
@@ -29,6 +30,7 @@ describe('Protected models endpoint', function () {
     const userName = 'Example';
     let createdUserId = '';
     let createdModelId = '';
+    let createdCollectionId = '12345';
 
     const title = 'Test model';
     const scale = '1:64';
@@ -50,10 +52,22 @@ describe('Protected models endpoint', function () {
                         })
                 );
             })
+            .then(() => {
+                return Users.hashPassword(password).then(password =>
+                    Collections.create({
+                        userId: createdUserId,
+                        name: 'test collection',
+                    })
+                        .then(collection => {
+                            createdCollectionId = collection.id;
+                        })
+                );
+            })
     });
 
     after(function () {
         return Users.deleteMany({})
+            .then(Collections.deleteMany({}))
             .then(() => closeServer())
     });
 
@@ -67,6 +81,7 @@ describe('Protected models endpoint', function () {
                         .set('authorization', `Bearer ${token}`)
                         .send({
                             userId: createdUserId,
+                            collectionId: createdCollectionId,
                             title,
                             scale,
                             condition,
@@ -103,6 +118,83 @@ describe('Protected models endpoint', function () {
                         })
                         .then(res => {
                             expect(res).to.have.status(403);
+                        });
+                })
+        });
+        it(`Should return a user's model`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/models/${createdModelId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('object');
+                            expect(res.body.title).to.deep.equal(title);
+                            expect(res.body.scale).to.deep.equal(scale);
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting a user's model`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/models/${createdModelId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
+                        });
+                })
+        });
+        it(`Should return all models in a collection`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/models/collection/${createdCollectionId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('array');
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting all models in a collection`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/models/collection/${createdCollectionId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
+                        });
+                })
+        });
+        it(`Should return all user's models`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get('/api/models')
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('array');
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting all user's models`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get('/api/models')
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
                         });
                 })
         });

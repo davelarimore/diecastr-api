@@ -11,7 +11,7 @@ exports.usersGetMe = (req, res) => {
     Users
         .findOne({ '_id': req.user._id })
         .populate('collections')
-        .populate('models')
+        // .populate('models')
         .then(user => {
             res.status(200).json(user.serialize());
         })
@@ -38,6 +38,7 @@ exports.usersPut = (req, res) => {
         },
             {
                 userName: req.body.userName,
+                avatarUrl: req.body.avatarUrl,
             },
             { new: true }) //returns updated doc
             .then(response => {

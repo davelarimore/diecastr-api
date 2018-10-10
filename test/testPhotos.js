@@ -119,6 +119,59 @@ describe('Protected photos endpoint', function () {
                         });
                 })
         });
+        it(`Should return a user's photo`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/photos/${createdPhotoId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('object');
+                            expect(res.body.modelId).to.deep.equal(createdModelId);
+                            expect(res.body.url).to.deep.equal(url);
+                            expect(res.body.description).to.deep.equal(description);
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting a user's photo`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/photos/${createdPhotoId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
+                        });
+                })
+        });
+        it(`Should return all user's photos`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get('/api/photos')
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('array');
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting all user's photos`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get('/api/photos')
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
+                        });
+                })
+        });
         it(`Should update photo`, function () {
             const updateData = {
                 _id: createdPhotoId,

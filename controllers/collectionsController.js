@@ -1,9 +1,59 @@
 const Users = require('../models/usersModel');
 const Collections = require('../models/collectionsModel');
 
+// GET: get user's collection
+exports.collectionsGet = (req, res) => {
+    if (req.user._id) {
+        Collections
+            .findOne({ '_id': req.params.id, userId: req.user._id })
+            .populate('userId', 'userName avatarUrl')
+            .then(collection => {
+                res.status(200).json(collection);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+// GET: get all user's collections
+exports.collectionsGetAll = (req, res) => {
+    if (req.user._id) {
+        Collections
+            .find({ userId: req.user._id })
+            .populate('userId', 'userName avatarUrl')
+            .then(collections => {
+                res.status(200).json(collections);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+// GET: get all public collections
+exports.collectionsGetAllPublic = (req, res) => {
+        Collections
+            .find({ public: true })
+            .populate('userId', 'userName avatarUrl')
+            .then(collections => {
+                res.status(200).json(collections);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+}
+
 //POST: add a collection to authenticated user
 exports.collectionsPost = (req, res) => {
-    if (req.user._id == req.body.userId) {
+    if (req.user._id === req.body.userId.toString()) {
         Collections
             .create({
                 userId: req.body.userId,
@@ -20,7 +70,6 @@ exports.collectionsPost = (req, res) => {
         res.status(403).json('Not authorized to access resource');
     }
 }
-
 
 //PUT: update collection belonging to authenticated user
 exports.collectionsUpdate = (req, res) => {

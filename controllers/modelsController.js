@@ -1,9 +1,65 @@
 const Users = require('../models/usersModel');
 const Models = require('../models/modelsModel');
+const Collections = require('../models/collectionsModel');
+
+// GET get model, accessible by authenticated owner of model
+exports.modelsGet = (req, res) => {
+    if (req.user._id) {
+        Models
+            .findOne({ '_id': req.params.id, userId: req.user._id })
+            .then(model => {
+                res.status(200).json(model);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+// GET get all models belonging to authenticated user
+exports.modelsGetAll = (req, res) => {
+    if (req.user._id) {
+        Models
+            .find({ userId: req.user._id })
+            .then(models => {
+                res.status(200).json(models);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+// GET get all models belonging to a collection
+exports.modelsGetCollection = (req, res) => {
+    Collections
+        .findOne({ '_id': req.params.collectionId })
+        .then(collection => {
+            if (collection.public === true || collection.userId.toString() === req.user._id) {
+                Models
+                    .find({ collectionId: req.params.collectionId })
+                    .then(models => {
+                        res.status(200).json(models);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        res.status(500).json({ message: 'Internal server error' })
+                    });
+            } else {
+                res.status(403).json('Not authorized to access resource');
+            }
+        })
+}
 
 //POST: add a model to authenticated user
 exports.modelsPost = (req, res) => {
-    if (req.user._id == req.body.userId) {
+    if (req.user._id === req.body.userId.toString()) {
         Models
             .create({
                 userId: req.body.userId,

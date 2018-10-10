@@ -90,11 +90,61 @@ describe('Protected collections endpoint', function () {
                         });
                 })
         });
+        it(`Should return a user's collection`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/collections/${createdCollectionId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('object');
+                            expect(res.body.name).to.deep.equal(name);
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting collection`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/collections/${createdCollectionId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
+                        });
+                })
+        });
+        it(`Should return all user's collections`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get('/api/collections')
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('array');
+                        });
+                })
+        });
+        it(`Should prevent unauthorized user from getting all user's collections`, function () {
+            return login(email, 'wrongPassword')
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get('/api/collections')
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(401);
+                        });
+                })
+        });
         it(`Should update collection`, function () {
             const updateData = {
                 _id: createdCollectionId,
                 name: 'foo',
-
             };
             return login(email, password)
                 .then((token) => {

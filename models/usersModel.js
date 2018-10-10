@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema({
     userName: { type: String, required: true, default: '' },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
+    avatarUrl: { type: String },
     collections: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Collections'

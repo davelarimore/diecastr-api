@@ -1,10 +1,43 @@
 const Models = require('../models/modelsModel');
 const Photos = require('../models/photosModel');
 
-//POST: add a photo
+// GET get photo, accessible by authenticated owner of model
+exports.photosGet = (req, res) => {
+    if (req.user._id) {
+        Photos
+            .findOne({ '_id': req.params.id, userId: req.user._id })
+            .then(photo => {
+                res.status(200).json(photo);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
 
+// GET get all photos belonging to authenticated user
+exports.photosGetAll = (req, res) => {
+    if (req.user._id) {
+        Photos
+            .find({ userId: req.user._id })
+            .then(photos => {
+                res.status(200).json(photos);
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+//POST: add a photo
 exports.photosPost = (req, res) => {
-    if (req.user._id == req.body.userId) {
+    if (req.user._id === req.body.userId.toString()) {
     Photos
         .create({
             userId: req.body.userId,
@@ -28,7 +61,7 @@ exports.photosPost = (req, res) => {
 exports.photosUpdate = (req, res) => {
     Photos.findById(req.params.id)
         .then((photo) => {
-            if (photo.userId.toString() == req.user._id) {
+            if (photo.userId.toString() === req.user._id) {
                 const requiredFields = ['url'];
                 for (let i = 0; i < requiredFields.length; i++) {
                     const field = requiredFields[i];
@@ -63,7 +96,7 @@ exports.photosUpdate = (req, res) => {
 exports.photosDelete = (req, res) => {
     Photos.findById(req.params.id)
         .then((photo) => {
-            if (photo.userId.toString() == req.user._id) {
+            if (photo.userId.toString() === req.user._id) {
                 Photos
                     .findByIdAndRemove(req.params.id)
                     .then(() => {
