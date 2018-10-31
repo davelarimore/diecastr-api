@@ -3,7 +3,10 @@ const router = express.Router();
 
 const collectionsController = require('../controllers/collectionsController');
 
-//Get: get a user's collection
+//Get: get a user's (my) collection with basic model info (for list)
+router.get('/collections/models', collectionsController.collectionsGetModelList);
+
+//Get: get a user's collection with user info, no models. For list of public collections
 router.get('/collections/:id', collectionsController.collectionsGet);
 
 //Get: get all user's collections

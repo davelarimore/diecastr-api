@@ -40,11 +40,11 @@ describe('Auth endpoints', function () {
     });
 //helper function for running auth test on all endpoints
 
-    describe('/auth/login', function () {
+    describe('/api/auth/login', function () {
         it('Should reject requests with no credentials', function () {
             return chai
                 .request(app)
-                .post('/auth/login')
+                .post('/api/auth/login')
                 .then((res) => {
                     expect(res).to.have.status(400);
                 })
@@ -52,7 +52,7 @@ describe('Auth endpoints', function () {
         it('Should reject requests with incorrect emails', function () {
             return chai
                 .request(app)
-                .post('/auth/login')
+                .post('/api/auth/login')
                 .send({ email: 'wrongEmail', password })
                 .then((res) => {
                     expect(res).to.have.status(401);
@@ -61,7 +61,7 @@ describe('Auth endpoints', function () {
         it('Should reject requests with incorrect passwords', function () {
             return chai
                 .request(app)
-                .post('/auth/login')
+                .post('/api/auth/login')
                 .send({ email, password: 'wrongPassword' })
                 .then((res) => {
                     expect(res).to.have.status(401);
@@ -70,7 +70,7 @@ describe('Auth endpoints', function () {
         it('Should return a valid auth token', function () {
             return chai
                 .request(app)
-                .post('/auth/login')
+                .post('/api/auth/login')
                 .send({ email, password })
                 .then(res => {
                     expect(res).to.have.status(200);

@@ -6,8 +6,11 @@ const Collections = require('../models/collectionsModel');
 exports.modelsGet = (req, res) => {
     if (req.user._id) {
         Models
-            .findOne({ '_id': req.params.id, userId: req.user._id })
+            .findOne({ '_id': req.params.id })
             .then(model => {
+                if (!model) {
+                    return res.status(404)
+                }
                 res.status(200).json(model);
             })
             .catch(err => {
@@ -17,6 +20,27 @@ exports.modelsGet = (req, res) => {
     } else {
         res.status(403).json('Not authorized to access resource');
     }
+}
+
+// GET get a public model
+exports.modelsGetPublic = (req, res) => {
+    Models
+        .findOne({ '_id': req.params.id })
+        .populate('collectionId', 'public')
+        .then(model => {
+            if (!model) {
+                return res.status(404)
+            } else if (model.collectionId.public) {
+                res.status(200).json(model);
+            } else {
+                res.status(403).json('Not authorized to access resource');
+
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: 'Internal server error' })
+        });
 }
 
 // GET get all models belonging to authenticated user
@@ -59,25 +83,11 @@ exports.modelsGetCollection = (req, res) => {
 
 //POST: add a model to authenticated user
 exports.modelsPost = (req, res) => {
-    if (req.user._id === req.body.userId.toString()) {
+    if (req.user._id && req.body.collectionId) {
         Models
             .create({
-                userId: req.body.userId,
+                userId: req.user._id,
                 collectionId: req.body.collectionId,
-                title: req.body.title,
-                modelMfg: req.body.modelMfg,
-                scale: req.body.scale,
-                color: req.body.color,
-                condition: req.body.condition,
-                packaging: req.body.packaging,
-                mfgYear: req.body.mfgYear,
-                purchaseYear: req.body.purchaseYear,
-                purchasePrice: req.body.purchasePrice,
-                estValue: req.body.estValue,
-                qty: req.body.qty,
-                status: req.body.status,
-                notes: req.body.notes,
-                tags: req.body.tags,
             })
             .then(model => {
                 res.status(201).json(model);
@@ -119,9 +129,9 @@ exports.modelsUpdate = (req, res) => {
                         packaging: req.body.packaging,
                         mfgYear: req.body.mfgYear,
                         purchaseYear: req.body.purchaseYear,
-                        purchasePrice: req.body.purchasePrice,
-                        estValue: req.body.estValue,
-                        qty: req.body.qty,
+                        purchasePrice: req.body.purchasePrice || '',
+                        estValue: req.body.estValue || '',
+                        askingPrice: req.body.askingPrice || '',
                         status: req.body.status,
                         notes: req.body.notes,
                         tags: req.body.tags,

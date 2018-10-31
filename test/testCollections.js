@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 function login(email, password) {
     return chai
         .request(app)
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ email, password })
         .then((res) => {
             return res.body.authToken;
@@ -34,23 +34,23 @@ describe('Protected collections endpoint', function () {
 
     before(function () {
         return runServer(TEST_DATABASE_URL)
-        .then(() => {
-            return Users.hashPassword(password).then(password =>
-                Users.create({
-                    email,
-                    password,
-                    userName
-                })
-                    .then(user => {
-                        createdUserId = user.id;
+            .then(() => {
+                return Users.hashPassword(password).then(password =>
+                    Users.create({
+                        email,
+                        password,
+                        userName
                     })
-            );
-        })
+                        .then(user => {
+                            createdUserId = user.id;
+                        })
+                );
+            })
     });
 
     after(function () {
         return Users.deleteMany({})
-        .then(() => closeServer())
+            .then(() => closeServer())
     });
 
     describe('/api/collections', function () {
@@ -90,7 +90,7 @@ describe('Protected collections endpoint', function () {
                         });
                 })
         });
-        it(`Should return a user's collection`, function () {
+        it(`Should return a user's collection with user info`, function () {
             return login(email, password)
                 .then((token) => {
                     return chai
@@ -113,6 +113,20 @@ describe('Protected collections endpoint', function () {
                         .set('authorization', `Bearer ${token}`)
                         .then(res => {
                             expect(res).to.have.status(401);
+                        });
+                })
+        });
+        it(`Should return a user's collection with basic model info`, function () {
+            return login(email, password)
+                .then((token) => {
+                    return chai
+                        .request(app)
+                        .get(`/api/collections/${createdCollectionId}`)
+                        .set('authorization', `Bearer ${token}`)
+                        .then(res => {
+                            expect(res).to.have.status(200);
+                            expect(res.body).to.be.an('object');
+                            expect(res.body.name).to.deep.equal(name);
                         });
                 })
         });
@@ -144,7 +158,7 @@ describe('Protected collections endpoint', function () {
         it(`Should update collection`, function () {
             const updateData = {
                 _id: createdCollectionId,
-                name: 'foo',
+                public: true,
             };
             return login(email, password)
                 .then((token) => {
@@ -157,7 +171,7 @@ describe('Protected collections endpoint', function () {
                             .then((res) => {
                                 expect(res).to.have.status(200);
                                 expect(res.body).to.be.a("object");
-                                expect(res.body.name).to.deep.equal(updateData.name);
+                                expect(res.body.public).to.deep.equal(updateData.public);
                             })
                     );
                 })

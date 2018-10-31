@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 function login(email, password) {
     return chai
         .request(app)
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ email, password })
         .then((res) => {
             return res.body.authToken;

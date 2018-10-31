@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 function login(email, password) {
     return chai
         .request(app)
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ email, password })
         .then((res) => {
             return res.body.authToken;
@@ -82,22 +82,13 @@ describe('Protected models endpoint', function () {
                         .send({
                             userId: createdUserId,
                             collectionId: createdCollectionId,
-                            title,
-                            scale,
-                            condition,
-                            packaging,
-                            status
                         })
                         .then(res => {
                             createdModelId = res.body._id;
                             expect(res).to.have.status(201);
                             expect(res.body).to.be.an('object');
                             expect(res.body.userId).to.deep.equal(createdUserId);
-                            expect(res.body.title).to.deep.equal(title);
-                            expect(res.body.scale).to.deep.equal(scale);
-                            expect(res.body.condition).to.deep.equal(condition);
-                            expect(res.body.packaging).to.deep.equal(packaging);
-                            expect(res.body.status).to.deep.equal(status);
+                            expect(res.body.title).to.deep.equal('New Model');
                         });
                 })
         });
@@ -131,8 +122,7 @@ describe('Protected models endpoint', function () {
                         .then(res => {
                             expect(res).to.have.status(200);
                             expect(res.body).to.be.an('object');
-                            expect(res.body.title).to.deep.equal(title);
-                            expect(res.body.scale).to.deep.equal(scale);
+                            expect(res.body.title).to.deep.equal('New Model');
                         });
                 })
         });

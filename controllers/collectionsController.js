@@ -1,7 +1,7 @@
 const Users = require('../models/usersModel');
 const Collections = require('../models/collectionsModel');
 
-// GET: get user's collection
+// GET: get user's collection with user info, no models
 exports.collectionsGet = (req, res) => {
     if (req.user._id) {
         Collections
@@ -13,6 +13,88 @@ exports.collectionsGet = (req, res) => {
             .catch(err => {
                 console.error(err);
                 res.status(500).json({ message: 'Internal server error' })
+            });
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+// GET: get user's OWN collection with basic model info, paginated
+exports.collectionsGetModelList = (req, res) => {
+    const pageNo = parseInt(req.query.pageNo);
+    const size = parseInt(req.query.size);
+    const skip = size * (pageNo - 1);
+    let modelCount = '';
+
+    if (req.user._id) {
+
+        // get model count in collection
+        Collections.findOne({ userId: req.user._id })
+            .populate('models', '_id')
+            .exec(function (countError, countResult) {
+                modelCount = countResult.models.length;
+
+                // get a page of models from the collection
+                Collections
+                    .findOne({ userId: req.user._id })
+                    .populate({
+                        path: 'models',
+                        //limit model info populated
+                        select: 'title scale modelMfg photo1Url status',
+                        //paginate results
+                        options: { limit: size, skip: skip }
+                    })
+                    .then(collection => {
+                        const pageTotal = Math.ceil(modelCount / size);
+                        collection.pageTotal = pageTotal;
+                        res.status(200).json(collection);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        res.status(500).json({ message: 'Internal server error' })
+                    });
+            })
+
+
+    } else {
+        res.status(403).json('Not authorized to access resource');
+    }
+}
+
+// GET: get user's PUBLIC collection with basic model info, paginated
+exports.collectionsGetPublicModelList = (req, res) => {
+    const pageNo = parseInt(req.query.pageNo);
+    const size = parseInt(req.query.size);
+    const skip = size * (pageNo - 1);
+    let modelCount = '';
+
+    if (req.query.id) {
+
+        // get model count in collection
+        Collections.findOne({ _id: req.query.id })
+            .populate('models', '_id')
+            .exec(function (countError, countResult) {
+                modelCount = countResult.models.length;
+
+                // get a page of models from the collection
+                Collections
+                    .findOne({ _id: req.query.id })
+                    .populate({
+                        path: 'models',
+                        //limit model info populated
+                        select: 'title scale modelMfg photo1Url status',
+                        //paginate results
+                        options: { limit: size, skip: skip }
+                    })
+                    .then(collection => {
+                        const pageTotal = Math.ceil(modelCount / size);
+                        collection.pageTotal = pageTotal;
+                        res.status(200).json(collection);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        res.status(500).json({ message: 'Internal server error' })
+                    });
             });
     } else {
         res.status(403).json('Not authorized to access resource');
@@ -37,18 +119,18 @@ exports.collectionsGetAll = (req, res) => {
     }
 }
 
-// GET: get all public collections
+// GET: get all public collections with user info, no models
 exports.collectionsGetAllPublic = (req, res) => {
-        Collections
-            .find({ public: true })
-            .populate('userId', 'userName avatarUrl')
-            .then(collections => {
-                res.status(200).json(collections);
-            })
-            .catch(err => {
-                console.error(err);
-                res.status(500).json({ message: 'Internal server error' })
-            });
+    Collections
+        .find({ public: true }, { models: 0 })
+        .populate('userId', 'userName avatarUrl')
+        .then(collections => {
+            res.status(200).json(collections);
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: 'Internal server error' })
+        });
 }
 
 //POST: add a collection to authenticated user
@@ -76,7 +158,7 @@ exports.collectionsUpdate = (req, res) => {
     Users.findById(req.user._id)
         .then((user) => {
             if (user.collections.indexOf(req.params.id) > -1) {
-                const requiredFields = ['name'];
+                const requiredFields = [];
                 for (let i = 0; i < requiredFields.length; i++) {
                     const field = requiredFields[i];
                     if (!(field in req.body)) {
@@ -86,10 +168,9 @@ exports.collectionsUpdate = (req, res) => {
                     }
                 }
                 Collections.findOneAndUpdate({
-                    _id: req.body._id
+                    _id: req.params.id
                 },
                     {
-                        name: req.body.name,
                         public: req.body.public,
                     },
                     { new: true }) //returns updated doc

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 ///////////////////////////
-//Collection
+//Collectiona
 ///////////////////////////
 
 const collectionSchema = mongoose.Schema({
@@ -11,10 +11,14 @@ const collectionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users'
     },
-    modelIds: [{
+    models: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Models'
     }],
+    prevPage: { type: Number },
+    nextPage: { type: Number },
+    currentPage: { type: Number },
+    pageTotal: { type: Number },
 });
 
 // Push new collection reference to the user's document

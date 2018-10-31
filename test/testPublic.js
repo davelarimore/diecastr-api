@@ -12,17 +12,6 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-//Helpers
-function login(email, password) {
-    return chai
-        .request(app)
-        .post('/auth/login')
-        .send({ email, password })
-        .then((res) => {
-            return res.body.authToken;
-        })
-}
-
 //Tests
 describe('Public endpoints', function () {
     const email = 'exampleUser@test.biz';
@@ -85,20 +74,21 @@ describe('Public endpoints', function () {
             .then(() => closeServer())
     });
 
-    describe('/public/models', function () {
+    describe('/api/public/models', function () {
         it(`Should return all models in a public collection`, function () {
             return chai
                 .request(app)
-                .get(`/public/models/collection/${createdCollectionId}`)
+                .get(`/api/public/collections/models?id=${createdCollectionId}`)
                 .then(res => {
                     expect(res).to.have.status(200);
-                    expect(res.body).to.be.an('array');
+                    expect(res.body).to.be.an('object');
+                    expect(res.body.models).to.be.an('array');
                 });
         });
         it(`Should return all public collections`, function () {
             return chai
                 .request(app)
-                .get('/public/collections')
+                .get('/api/public/collections')
                 .then(res => {
                     expect(res).to.have.status(200);
                     expect(res.body).to.be.an('array');

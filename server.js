@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const morgan = require('morgan');
+const cors = require('cors');
+const { CLIENT_ORIGIN } = require('./config');
+
 const app = express();
 
 app.use(morgan('common'));
@@ -23,16 +26,16 @@ const jwtAuth = passport.authenticate('jwt', { session: false });
 mongoose.Promise = global.Promise;
 const { DATABASE_URL, PORT } = require('./config');
 
-
-// app.get("/", (req, res) => {
-//     res.sendFile(__dirname + "/public/index.html");
-// });
-
-
 //App
-app.use('/auth', require('./routes/authRouter'))
+app.use(
+    cors({
+        origin: CLIENT_ORIGIN
+    })
+);
 
-app.use('/public', require('./routes/publicRouter'))
+app.use('/api/public', require('./routes/publicRouter'))
+
+app.use('/api/auth', require('./routes/authRouter'))
 
 app.use('/api', [
     jwtAuth,
@@ -41,12 +44,6 @@ app.use('/api', [
     require('./routes/modelsRouter'),
     require('./routes/photosRouter'),
 ]);
-
-//404 handler
-// app.use(function (req, res, next) {
-//     res.status(404).sendFile(__dirname + "/public/index.html");
-// })
-
 
 function runServer(databaseUrl, port = PORT) {
     return new Promise((resolve, reject) => {
