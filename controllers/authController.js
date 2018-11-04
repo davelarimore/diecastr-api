@@ -6,28 +6,27 @@ const createAuthToken = function (user) {
     return jwt.sign({ user }, config.JWT_SECRET, {
         subject: user.email,
         expiresIn: config.JWT_EXPIRY,
-        algorithm: 'HS256'
+        algorithm: 'HS256',
     });
 };
 
-require('../models/petsModel');
-require('../models/visitsModel');
-require('../models/petsModel');
+require('../models/collectionsModel');
+require('../models/modelsModel');
 const Users = require('../models/usersModel');
+const Collections = require('../models/collectionsModel');
 
 const localAuth = passport.authenticate('local', { session: false });
 
 // Authenticate
 exports.authenticate = (req, res, next) => {
     const authToken = createAuthToken(req.user.serialize());
-    const role = req.user.role;
-    res.status(200).json({ authToken, role });
+    res.status(200).json({ authToken });
 };
 
 // Signup
 exports.signup = (req, res) => {
 
-    const requiredFields = ['email', 'password'];
+    const requiredFields = ['email', 'userName', 'password'];
     const missingField = requiredFields.find(field => !(field in req.body));
 
     if (missingField) {
@@ -39,7 +38,7 @@ exports.signup = (req, res) => {
         });
     }
 
-    const stringFields = ['email', 'password', 'firstName', 'lastName'];
+    const stringFields = ['email', 'userName', 'password' ];
     const nonStringField = stringFields.find(
         field => field in req.body && typeof req.body[field] !== 'string'
     );
@@ -72,8 +71,11 @@ exports.signup = (req, res) => {
         email: {
             min: 1
         },
+        userName: {
+            min: 1
+        },
         password: {
-            min: 10,
+            min: 8,
             // bcrypt truncates after 72 characters
             max: 72
         }
@@ -103,28 +105,16 @@ exports.signup = (req, res) => {
     }
 
     let {
-        email,
+        userName,
         password,
-        firstName = '',
-        lastName = '',
-        role,
-        companyName,
-        phone,
-        addressString,
-        vetInfo,
-        entryNote,
-        providerId
+        email
     } = req.body;
-    // Username and password come in pre-trimmed, otherwise we throw an error
-    // before this
-    firstName = firstName.trim();
-    lastName = lastName.trim();
 
     return Users.find({ email })
-        .count()
+        .countDocuments() //deprectated
         .then(count => {
             if (count > 0) {
-                // There is an existing user with the same email
+                // There is an existing user with the same userName
                 return Promise.reject({
                     code: 422,
                     reason: 'ValidationError',
@@ -137,20 +127,19 @@ exports.signup = (req, res) => {
         })
         .then(hash => {
             return Users.create({
-                email,
+                email, 
+                userName,
                 password: hash,
-                firstName,
-                lastName,
-                companyName,
-                role,
-                phone,
-                addressString,
-                vetInfo,
-                entryNote,
-                providerId
             });
         })
         .then((user) => {
+            // create initial collection for new user
+            Collections
+                .create({
+                    userId: user._id,
+                    name: user.userName + "'s Collection",
+                })
+
             return res.status(201).json(user.serialize());
         })
         .catch(err => {
@@ -163,15 +152,7 @@ exports.signup = (req, res) => {
         });
 };
 
-// GET providers for signup screen
-exports.authGetProviders = (req, res) => {
-    Users
-        .find({ 'role': 'provider' })
-        .then(users => {
-            res.status(201).json(users);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ message: 'Internal server error' })
-        });
-}
+exports.refresh = (req, res) => {
+    const authToken = createAuthToken(req.user);
+    res.json({ authToken });
+};
