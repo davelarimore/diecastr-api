@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 const fs = require('fs');
 const fileType = require('file-type');
-// const bluebird = require('bluebird');
 const multiparty = require('multiparty');
 const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = require('../config');
 
@@ -12,7 +11,6 @@ AWS.config.update({
 });
 
 // configure AWS to work with promises
-// AWS.config.setPromisesDependency(bluebird);
 AWS.config.setPromisesDependency(Promise);
 
 // create S3 instance
@@ -41,7 +39,7 @@ exports.photosPost = (req, res) => {
             const buffer = fs.readFileSync(path);
             const type = fileType(buffer);
             const timestamp = Date.now().toString();
-            const fileName = `modelPhotos/${timestamp}-lg`;
+            const fileName = `userImages/${timestamp}-lg`;
             const data = await uploadFile(buffer, fileName, type)
             console.log(data);
             return res.status(200).send(data);
@@ -51,5 +49,19 @@ exports.photosPost = (req, res) => {
     });
 };
 
-
- 
+// DELETE: delete a photo
+exports.photosDelete = (req, res) => {
+    const params = {
+        Bucket: 'diecastr',
+        Key: `userImages/${req.body.name}`,
+    };
+    console.log('deleting: ', req.body.name)
+    s3.deleteObject(params).promise()
+        .then(() => {
+            res.status(204).send();
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ error: 'Internal server error' });
+        });
+}

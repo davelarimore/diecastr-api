@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+// const photosController = require('../controllers/photosController');
 
 ///////////////////////////
 //Models (the diecast ones)
@@ -24,7 +25,7 @@ const modelSchema = mongoose.Schema({
     purchasePrice: { type: Number, default: '' },
     estValue: { type: Number, default: '' },
     askingPrice: { type: Number, default: '' },
-    status: { type: String, required: true, default: 'NOT_FOR_SALE' },
+    status: { type: String, required: true, default: 'Not for sale' },
     notes: { type: String },
     tags: [{ type: String }],
     photo1Url: { type: String, required: true, default: 'https://s3.amazonaws.com/diecastr/placeholders/model-placeholder.svg' },

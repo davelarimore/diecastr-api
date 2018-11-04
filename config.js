@@ -12,5 +12,5 @@ exports.CLIENT_ORIGIN = process.env.CLIENT_ORIGIN_URL || 'http://localhost:3000'
 
 // S3
 exports.S3_BUCKET = "diecastr",
-exports.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "AKIAJHNYMHGNBXFO3VIA",
-exports.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || "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"
+exports.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || "AKIAJWBI7GFG2UMCA5QQ",
+exports.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || "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"

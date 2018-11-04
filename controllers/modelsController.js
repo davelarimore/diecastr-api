@@ -135,6 +135,10 @@ exports.modelsUpdate = (req, res) => {
                         status: req.body.status,
                         notes: req.body.notes,
                         tags: req.body.tags,
+                        photo1Url: req.body.photo1Url,
+                        photo2Url: req.body.photo2Url,
+                        photo3Url: req.body.photo3Url,
+                        photo4Url: req.body.photo4Url,
                     },
                     { new: true }) //returns updated doc
                     .then(response => {
@@ -158,6 +162,7 @@ exports.modelsDelete = (req, res) => {
                 Models
                     .findByIdAndRemove(req.params.id)
                     .then(() => {
+                        // TODO remove 204 messages
                         res.status(204).json({ message: 'Model deleted' });
                     })
                     .catch(err => {
