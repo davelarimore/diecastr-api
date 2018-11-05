@@ -106,7 +106,7 @@ exports.modelsUpdate = (req, res) => {
     Users.findById(req.user._id)
         .then((user) => {
             if (user.models.indexOf(req.params.id) > -1) {
-                const requiredFields = ['title', 'scale', 'condition', 'status'];
+                const requiredFields = ['title', 'condition', 'status'];
                 for (let i = 0; i < requiredFields.length; i++) {
                     const field = requiredFields[i];
                     if (!(field in req.body)) {

@@ -20,6 +20,7 @@ const s3 = new AWS.S3();
 // abstracts function to resize and upload a file returning a promise
 const uploadFile = (buffer, name, type) => {
     return new Promise((resolve, reject) => {
+        console.log('resizing and uploading image');
         sharp(buffer)
             .resize(400)
             .toFormat('jpg')

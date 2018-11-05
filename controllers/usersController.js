@@ -1,6 +1,7 @@
 'use strict';
 
 const Users = require('../models/usersModel');
+const Collections = require('../models/collectionsModel');
 
 ////////////////////////////////
 // ALL AUTHENTICATED USERS
@@ -33,6 +34,7 @@ exports.usersPut = (req, res) => {
                 return res.status(400).send(message);
             }
         }
+        let finalRepsonse = '';
         Users.findOneAndUpdate({
             _id: req.body._id
         },
@@ -43,7 +45,15 @@ exports.usersPut = (req, res) => {
             { new: true }) //returns updated doc
             .populate('models', 'scale purchasePrice estValue status')
             .then(response => {
-                res.json(response);
+                finalRepsonse = response;
+                // update colleciton name based on new user name
+                Collections.findOneAndUpdate(
+                    { userId: response._id },
+                    { $set: { name: response.userName + "'s collection" }
+                })
+                .then(
+                   res.json(finalRepsonse)
+                )
             })
             .catch(err => {
                 console.error(err);
