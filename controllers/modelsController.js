@@ -162,7 +162,6 @@ exports.modelsDelete = (req, res) => {
                 Models
                     .findByIdAndRemove(req.params.id)
                     .then(() => {
-                        // TODO remove 204 messages
                         res.status(204).json({ message: 'Model deleted' });
                     })
                     .catch(err => {
